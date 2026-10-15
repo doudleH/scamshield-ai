@@ -19,6 +19,19 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Tùy chỉnh CSS: Ẩn hoàn toàn footer, watermark và huy hiệu "Hosted with Streamlit"
+st.markdown("""
+    <style>
+    /* Ẩn footer và huy hiệu nền tảng */
+    footer {visibility: hidden; display: none !important;}
+    [data-testid="stDecoration"] {display: none !important;}
+    [data-testid="stStatusWidget"] {display: none !important;}
+    .viewerBadge_container__1QSob, [class*="viewerBadge"] {display: none !important;}
+    div[class*="viewerBadge"], a[class*="viewerBadge"] {display: none !important;}
+    #MainMenu {visibility: hidden;}
+    </style>
+""", unsafe_allow_html=True)
+
 # Header chính
 st.title("🛡️ ScamShield AI")
 st.markdown(
