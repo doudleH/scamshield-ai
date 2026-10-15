@@ -1,0 +1,77 @@
+# ==========================================
+# 1. Python Environment & Compilations
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+dist/
+build/
+*.egg-info/
+
+# ==========================================
+# 2. Large Data & Model Weights
+# ==========================================
+data/
+*.csv
+*.xlsx
+*.parquet
+# Cho phép lưu file model vì dung lượng nhẹ (~3.4MB), bắt buộc để deploy Streamlit Cloud
+!models/*.pkl
+!models/*.joblib
+!models/.gitkeep
+
+# ==========================================
+# 3. Security, API Keys & Credentials
+# ==========================================
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+secrets/
+*.pem
+*.key
+*.cert
+
+# ==========================================
+# 4. Tài nguyên Nội bộ Dự thi & Hướng dẫn SIC
+# (Tránh rò rỉ đề thi, giáo trình đối chiếu, tài liệu bảo vệ)
+# ==========================================
+reports/ai_architecture_sic.md
+HUONG_DAN_*.md
+TODO_*.md
+ROADMAP_*.md
+internal/
+private/
+scratch/
+docs/internal/
+*.log
+
+# ==========================================
+# 5. Định hướng Phát triển Thương mại & Bảo hộ Sở hữu Trí tuệ (IP)
+# (Kế hoạch kinh doanh, slide thuyết trình nội bộ, pitch deck)
+# ==========================================
+commercial/
+pitch/
+business_plan/
+financials/
+*.pptx
+*.key
+docs/pitch/
+docs/commercial/
+
+# ==========================================
+# 6. IDE, Local Configs & OS Metadata
+# ==========================================
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
