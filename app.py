@@ -19,16 +19,27 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Tùy chỉnh CSS: Ẩn hoàn toàn footer, watermark và huy hiệu "Hosted with Streamlit"
+# Tùy chỉnh CSS: Ẩn hoàn toàn footer, watermark, avatar và huy hiệu Streamlit
 st.markdown("""
     <style>
-    /* Ẩn footer và huy hiệu nền tảng */
-    footer {visibility: hidden; display: none !important;}
+    /* Ẩn footer, header phụ và thanh trạng thái */
+    footer {visibility: hidden !important; display: none !important;}
     [data-testid="stDecoration"] {display: none !important;}
     [data-testid="stStatusWidget"] {display: none !important;}
-    .viewerBadge_container__1QSob, [class*="viewerBadge"] {display: none !important;}
-    div[class*="viewerBadge"], a[class*="viewerBadge"] {display: none !important;}
-    #MainMenu {visibility: hidden;}
+    #MainMenu {visibility: hidden !important; display: none !important;}
+    
+    /* Ẩn toàn bộ huy hiệu Streamlit Cloud, vương miện đỏ, avatar và nút Manage */
+    .viewerBadge_container__1QSob, [class*="viewerBadge"], [class*="ViewerBadge"] {display: none !important; visibility: hidden !important;}
+    div[class*="viewerBadge"], a[class*="viewerBadge"] {display: none !important; visibility: hidden !important;}
+    [class*="profileContainer"], [class*="ProfileContainer"] {display: none !important; visibility: hidden !important;}
+    [data-testid="manage-app-button"], #manage-app-button {display: none !important; visibility: hidden !important;}
+    button[title*="Manage app"], button[aria-label*="Manage app"] {display: none !important;}
+    
+    /* Ẩn avatar profile và link dẫn về streamlit.io */
+    img[src*="githubusercontent.com"], img[src*="avatar"] {display: none !important;}
+    a[href*="streamlit.io"], a[href*="share.streamlit.io"] {display: none !important;}
+    div:has(> a[href*="streamlit.io"]) {display: none !important;}
+    div:has(> img[src*="githubusercontent.com"]) {display: none !important;}
     </style>
 """, unsafe_allow_html=True)
 
