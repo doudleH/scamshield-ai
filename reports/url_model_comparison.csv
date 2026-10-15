@@ -1,0 +1,4 @@
+Model,Precision,Recall,F1_Score
+LogisticRegression,0.9518,0.7859,0.8609
+DecisionTree,0.9522,0.7785,0.8566
+RandomForest,0.9518,0.7749,0.8543

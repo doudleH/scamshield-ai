@@ -1,0 +1,4 @@
+Model,Precision,Recall,F1_Score
+MultinomialNB,0.7047,0.8608,0.7749
+LogisticRegression,0.7451,0.962,0.8398
+RandomForest,0.8294,0.8924,0.8598

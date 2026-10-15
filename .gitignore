@@ -21,7 +21,8 @@ data/
 *.csv
 *.xlsx
 *.parquet
-# Cho phép lưu file model vì dung lượng nhẹ (~3.4MB), bắt buộc để deploy Streamlit Cloud
+# Cho phép lưu file so sánh kết quả và models vì dung lượng nhẹ
+!reports/*.csv
 !models/*.pkl
 !models/*.joblib
 !models/.gitkeep
