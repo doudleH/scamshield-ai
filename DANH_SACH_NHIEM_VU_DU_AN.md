@@ -71,7 +71,8 @@ Các hạng mục dưới đây được chia theo từng Module độc lập, r
 ---
 
 ### MODULE 1: NÂNG CẤP TÍNH NĂNG ỨNG DỤNG ANDROID (ANDROID CLIENT)
-*Mục tiêu: Hoàn thiện tính năng trải nghiệm người dùng, quét toàn diện thiết bị và chuẩn bị file APK đóng gói cuối cùng.*
+* **Nhánh Git phụ trách:** `feature/android-app`
+* *Mục tiêu: Hoàn thiện tính năng trải nghiệm người dùng, quét toàn diện thiết bị và chuẩn bị file APK đóng gói cuối cùng.*
 
 * **Nhiệm vụ 1.1: Xây dựng tính năng "Quét Hộp thư Đến" (Scan SMS Inbox)**
   * Mô tả: Khi người dùng bấm nút "Quét hộp thư", ứng dụng sử dụng `contentResolver.query(Telephony.Sms.Inbox.CONTENT_URI, ...)` để quét toàn bộ các tin nhắn đã có sẵn trong điện thoại.
@@ -88,7 +89,8 @@ Các hạng mục dưới đây được chia theo từng Module độc lập, r
 ---
 
 ### MODULE 2: MỞ RỘNG MÁY CHỦ BACKEND & DỊCH VỤ ĐÁM MÂY (BACKEND & MLOPS)
-*Mục tiêu: Đảm bảo ứng dụng di động có thể kết nối Internet thực tế và xây dựng vòng lặp phản hồi dữ liệu (Active Learning).*
+* **Nhánh Git phụ trách:** `feature/backend-api`
+* *Mục tiêu: Đảm bảo ứng dụng di động có thể kết nối Internet thực tế và xây dựng vòng lặp phản hồi dữ liệu (Active Learning).*
 
 * **Nhiệm vụ 2.1: Bổ sung Endpoint Tiếp nhận Phản ánh `/api/v1/report`**
   * Mô tả: Tiếp nhận dữ liệu tin nhắn lừa đảo do người dùng báo cáo từ app Android hoặc Web Streamlit.
@@ -103,7 +105,8 @@ Các hạng mục dưới đây được chia theo từng Module độc lập, r
 ---
 
 ### MODULE 3: KIỂM THỬ THỰC THỰC NGHIỆM & ĐÁNH GIÁ MÔ HÌNH (DATA & BENCHMARKING)
-*Mục tiêu: Thu thập số liệu khoa học, biểu đồ thực nghiệm phục vụ việc chứng minh hiệu quả dự án trước hội đồng SIC.*
+* **Nhánh Git phụ trách:** `feature/ai-benchmark`
+* *Mục tiêu: Thu thập số liệu khoa học, biểu đồ thực nghiệm phục vụ việc chứng minh hiệu quả dự án trước hội đồng SIC.*
 
 * **Nhiệm vụ 3.1: Mở rộng Bộ dữ liệu Kiểm thử Thực tế (Real-world Test Suite)**
   * Mô tả: Thu thập thêm 30 - 50 mẫu tin nhắn lừa đảo thực tế xuất hiện tại Việt Nam cuối năm 2026 (lừa đảo tuyển dụng, mạo danh cục thuế hoàn thuế, phạt nguội giao thông, tặng quà tri ân sàn thương mại điện tử, cờ bạc lách luật).
@@ -117,7 +120,8 @@ Các hạng mục dưới đây được chia theo từng Module độc lập, r
 ---
 
 ### MODULE 4: HỒ SƠ BÁO CÁO, SLIDE THUYẾT TRÌNH & KỊCH BẢN DEMO (DEFENSE DELIVERABLES)
-*Mục tiêu: Đóng gói toàn bộ sản phẩm trí tuệ thành bài thuyết trình thuyết phục và ấn tượng trước ban giám khảo.*
+* **Quy cách làm việc:** Làm việc trực tiếp cùng Nhóm trưởng hoàn thiện hồ sơ nộp thầy (không cần tạo nhánh riêng).
+* *Mục tiêu: Đóng gói toàn bộ sản phẩm trí tuệ thành bài thuyết trình thuyết phục và ấn tượng trước ban giám khảo.*
 
 * **Nhiệm vụ 4.1: Thiết kế Slide Báo cáo Khóa luận (12 - 15 Slide Chuẩn mực)**
   * Slide 1: Trang tiêu đề dự án, mã nhóm, logo Samsung Innovation Campus.
