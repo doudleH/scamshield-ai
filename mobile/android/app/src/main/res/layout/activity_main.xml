@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0f172a"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:gravity="center_horizontal">
+
+        <!-- Header Logo & Tiêu đề -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🛡️ ScamShield AI"
+            android:textColor="#ffffff"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Lá chắn phát hiện SMS lừa đảo tự động"
+            android:textColor="#94a3b8"
+            android:textSize="14sp"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Card Trạng thái bảo vệ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#1e293b"
+            android:padding="16dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TRẠNG THÁI HỆ THỐNG:"
+                android:textColor="#cbd5e1"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvProtectionStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🟢 LÁ CHẮN ĐANG BẬT (BẢO VỆ 24/7)"
+                android:textColor="#10b981"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:layout_marginTop="6dp" />
+        </LinearLayout>
+
+        <!-- Nút BẬT / TẮT Bảo vệ (Toggle) -->
+        <Button
+            android:id="@+id/btnToggleProtection"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="⏸️ TẠM DỪNG LÁ CHẮN BẢO VỆ"
+            android:backgroundTint="#f59e0b"
+            android:textColor="#ffffff"
+            android:textStyle="bold"
+            android:layout_marginBottom="10dp" />
+
+        <!-- Nút mở cài đặt quyền Android -->
+        <Button
+            android:id="@+id/btnOpenSettings"
+            android:layout_width="match_parent"
+            android:layout_height="46dp"
+            android:text="⚙️ Quản Lý Quyền Ứng Dụng Trong Máy"
+            android:backgroundTint="#334155"
+            android:textColor="#94a3b8"
+            android:textSize="13sp"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Khung Soạn & Thử Nghiệm Tin Nhắn Tùy Chọn (Sandbox Tester) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#1e293b"
+            android:padding="16dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🧪 HỘP THỬ NGHIỆM AI TRỰC TIẾP:"
+                android:textColor="#38bdf8"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nhập hoặc dán bất kỳ tin nhắn nào (kể cả tin có link mà nhà mạng chặn gửi qua SIM):"
+                android:textColor="#94a3b8"
+                android:textSize="12sp"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/etCustomSms"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:background="#0f172a"
+                android:textColor="#ffffff"
+                android:textColorHint="#64748b"
+                android:hint="Ví dụ: Ban nhan duoc phan thuong VIP 88 nghin. Truy cap link de nhan..."
+                android:gravity="top|start"
+                android:padding="10dp"
+                android:textSize="13sp"
+                android:inputType="textMultiLine"
+                android:layout_marginBottom="10dp" />
+
+            <Button
+                android:id="@+id/btnTestCustomSms"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="🔍 QUÉT TIN NHẮN NÀY &amp; BẮN CẢNH BÁO"
+                android:backgroundTint="#2563eb"
+                android:textColor="#ffffff"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Nút Giả lập demo nhanh -->
+        <Button
+            android:id="@+id/btnSimulateScam"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="⚡ Giả Lập Mẫu Vietcombank Lừa Đảo"
+            android:backgroundTint="#ef4444"
+            android:textColor="#ffffff"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Chi tiết cảnh báo gần nhất -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#1e293b"
+            android:padding="14dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/tvAlertDetails"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Sẵn sàng bảo vệ. Khi có tin nhắn đến từ bất kỳ ai, hệ thống sẽ tự động quét bằng AI và gửi cảnh báo đỏ lên màn hình nếu phát hiện lừa đảo."
+                android:textColor="#e2e8f0"
+                android:textSize="13sp"
+                android:lineSpacingExtra="4dp" />
+        </LinearLayout>
+
+        <!-- Footer -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Samsung Innovation Campus (SIC-AI) • Capstone Project"
+            android:textColor="#64748b"
+            android:textSize="11sp"
+            android:layout_marginBottom="12dp" />
+
+    </LinearLayout>
+</ScrollView>

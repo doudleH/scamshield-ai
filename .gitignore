@@ -76,3 +76,17 @@ docs/commercial/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# ==========================================
+# 7. Android Studio & Gradle Build
+# ==========================================
+.gradle/
+**/build/
+*.iml
+local.properties
+.cxx/
+captures/
+mobile/android/.gradle/
+mobile/android/.idea/
+mobile/android/app/build/
+

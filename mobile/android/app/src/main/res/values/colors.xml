@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#2563eb</color>
+    <color name="primary_dark">#1d4ed8</color>
+    <color name="accent">#3b82f6</color>
+    <color name="background_dark">#0f172a</color>
+    <color name="card_dark">#1e293b</color>
+    <color name="danger">#ef4444</color>
+    <color name="warning">#f59e0b</color>
+    <color name="safe">#10b981</color>
+</resources>

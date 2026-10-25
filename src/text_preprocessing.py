@@ -42,6 +42,14 @@ def clean_vietnamese_text(text: str) -> str:
     phone_pattern = r"(?:\+?84|0)(?:\d{9}|\d{10})\b"
     text = re.sub(phone_pattern, " <PHONE> ", text)
 
+    # Thay thế mã OTP xác thực thành token an toàn <OTP>
+    otp_pattern = r"(?:mã\s*(?:otp|xác\s*thực)?|otp\s*(?:code|is|là)?\s*[:\s]*)([0-9]{4,8})\b"
+    text = re.sub(otp_pattern, " <OTP> ", text)
+
+    # Thay thế chuỗi số tài khoản / thẻ ngân hàng (10-19 chữ số) thành <CARD_NUMBER>
+    card_pattern = r"\b\d{10,19}\b"
+    text = re.sub(card_pattern, " <CARD_NUMBER> ", text)
+
     # Loại bỏ ký tự lạ, giữ lại chữ cái, số và dấu câu cơ bản
     text = re.sub(r"[^\w\s<>]", " ", text)
 
