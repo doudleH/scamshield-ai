@@ -1,173 +1,343 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0f172a"
-    android:fillViewport="true">
+    android:orientation="vertical"
+    android:background="@color/bg_dark">
 
-    <LinearLayout
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp"
-        android:gravity="center_horizontal">
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/bg_surface"
+        app:title="🛡️ ScamShield"
+        app:titleTextColor="@color/text_primary"
+        app:subtitle="Lá chắn tin nhắn bảo mật"
+        app:subtitleTextColor="@color/text_secondary"
+        app:elevation="0dp">
 
-        <!-- Header Logo & Tiêu đề -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="🛡️ ScamShield AI"
-            android:textColor="#ffffff"
-            android:textSize="26sp"
-            android:textStyle="bold"
-            android:layout_marginTop="16dp" />
+        <ImageButton
+            android:id="@+id/btnThemeToggle"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="end"
+            android:layout_marginEnd="14dp"
+            android:background="@drawable/bg_theme_toggle_btn"
+            android:contentDescription="Chuyển chế độ sáng tối"
+            android:padding="8dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_dark_mode"
+            app:tint="@color/text_primary" />
+    </com.google.android.material.appbar.MaterialToolbar>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Lá chắn phát hiện SMS lừa đảo tự động"
-            android:textColor="#94a3b8"
-            android:textSize="14sp"
-            android:layout_marginBottom="20dp" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
 
-        <!-- Card Trạng thái bảo vệ -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="#1e293b"
-            android:padding="16dp"
-            android:layout_marginBottom="16dp">
+            android:padding="16dp">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardStatus"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="TRẠNG THÁI HỆ THỐNG:"
-                android:textColor="#cbd5e1"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="@color/status_safe_bg"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="GIÁM SÁT THỜI GIAN THỰC"
+                        android:textColor="@color/text_hint"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.08"
+                        android:layout_marginBottom="6dp"/>
+
+                    <TextView
+                        android:id="@+id/tvProtectionStatus"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="🟢 LÁ CHẮN ĐANG BẬT (BẢO VỆ 24/7)"
+                        android:textColor="@color/status_safe"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="4dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Tự động bóc tách và cảnh báo khi có tin nhắn độc hại"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="13sp"
+                        android:layout_marginBottom="14dp"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnToggleProtection"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:text="TẠM DỪNG BẢO VỆ"
+                        android:textStyle="bold"
+                        app:cornerRadius="12dp"
+                        app:backgroundTint="@color/btn_warning"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardScanInbox"
+                    android:layout_width="0dp"
+                    android:layout_height="115dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    app:cardBackgroundColor="@color/bg_elevated"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📩"
+                            android:textSize="32sp"
+                            android:layout_marginBottom="6dp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="QUÉT HỘP THƯ"
+                            android:textColor="@color/text_primary"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:gravity="center"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Kiểm tra tin nhắn cũ"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="11sp"
+                            android:gravity="center"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardAlertHistory"
+                    android:layout_width="0dp"
+                    android:layout_height="115dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    app:cardBackgroundColor="@color/bg_elevated"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="📋"
+                            android:textSize="32sp"
+                            android:layout_marginBottom="6dp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="NHẬT KÝ"
+                            android:textColor="@color/text_primary"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:gravity="center"/>
+
+                        <TextView
+                            android:id="@+id/tvAlertHistorySubtitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Xem các mối đe dọa"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="11sp"
+                            android:gravity="center"
+                            android:layout_marginTop="2dp"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+            </LinearLayout>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardBackgroundColor="@color/bg_elevated"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🔍 KIỂM TRA TIN NHẮN TRỰC TIẾP"
+                        android:textColor="@color/brand_primary"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="4dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Dán nội dung tin nhắn hoặc liên kết nghi vấn để kiểm tra tức thì:"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp"
+                        android:layout_marginBottom="10dp"/>
+
+                    <EditText
+                        android:id="@+id/etCustomSms"
+                        android:layout_width="match_parent"
+                        android:layout_height="96dp"
+                        android:background="@drawable/bg_edit_text"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_hint"
+                        android:hint="Dán nội dung tin nhắn cần phân tích vào đây..."
+                        android:gravity="top|start"
+                        android:padding="14dp"
+                        android:textSize="13sp"
+                        android:inputType="textMultiLine"
+                        android:layout_marginBottom="14dp"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTestCustomSms"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:text="PHÂN TÍCH TIN NHẮN"
+                        android:textStyle="bold"
+                        app:cornerRadius="14dp"
+                        app:backgroundTint="@color/brand_primary"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardAlertDetails"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="14dp"
+                android:visibility="gone"
+                app:cardBackgroundColor="@color/bg_elevated"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="3dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:id="@+id/viewAlertDetailsAccent"
+                        android:layout_width="5dp"
+                        android:layout_height="match_parent"
+                        android:background="@color/status_danger" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/tvAlertDetails"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text=""
+                            android:textColor="@color/text_primary"
+                            android:textSize="13sp"
+                            android:lineSpacingExtra="4dp"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnOpenCurrentSms"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="match_parent"
+                            android:layout_height="44dp"
+                            android:layout_marginTop="10dp"
+                            android:text="💬 MỞ TIN NHẮN TRONG HỘP THƯ"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="12dp"
+                            android:visibility="gone"/>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnReportCurrentAlert"
+                            android:layout_width="match_parent"
+                            android:layout_height="44dp"
+                            android:layout_marginTop="8dp"
+                            android:text="🚨 BÁO CÁO TIN NHẮN NGHI NGỜ NÀY"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            app:cornerRadius="12dp"
+                            app:backgroundTint="@color/btn_danger"
+                            android:visibility="gone"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnOpenSettings"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:text="⚙️ Quản lý quyền hệ thống"
+                android:textColor="@color/text_secondary"
                 android:textSize="12sp"
-                android:textStyle="bold" />
+                android:layout_marginBottom="8dp"/>
 
             <TextView
-                android:id="@+id/tvProtectionStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🟢 LÁ CHẮN ĐANG BẬT (BẢO VỆ 24/7)"
-                android:textColor="#10b981"
-                android:textSize="17sp"
-                android:textStyle="bold"
-                android:layout_marginTop="6dp" />
-        </LinearLayout>
-
-        <!-- Nút BẬT / TẮT Bảo vệ (Toggle) -->
-        <Button
-            android:id="@+id/btnToggleProtection"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:text="⏸️ TẠM DỪNG LÁ CHẮN BẢO VỆ"
-            android:backgroundTint="#f59e0b"
-            android:textColor="#ffffff"
-            android:textStyle="bold"
-            android:layout_marginBottom="10dp" />
-
-        <!-- Nút mở cài đặt quyền Android -->
-        <Button
-            android:id="@+id/btnOpenSettings"
-            android:layout_width="match_parent"
-            android:layout_height="46dp"
-            android:text="⚙️ Quản Lý Quyền Ứng Dụng Trong Máy"
-            android:backgroundTint="#334155"
-            android:textColor="#94a3b8"
-            android:textSize="13sp"
-            android:layout_marginBottom="20dp" />
-
-        <!-- Khung Soạn & Thử Nghiệm Tin Nhắn Tùy Chọn (Sandbox Tester) -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="#1e293b"
-            android:padding="16dp"
-            android:layout_marginBottom="16dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🧪 HỘP THỬ NGHIỆM AI TRỰC TIẾP:"
-                android:textColor="#38bdf8"
-                android:textSize="13sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Nhập hoặc dán bất kỳ tin nhắn nào (kể cả tin có link mà nhà mạng chặn gửi qua SIM):"
-                android:textColor="#94a3b8"
-                android:textSize="12sp"
-                android:layout_marginTop="4dp"
-                android:layout_marginBottom="8dp" />
-
-            <EditText
-                android:id="@+id/etCustomSms"
-                android:layout_width="match_parent"
-                android:layout_height="80dp"
-                android:background="#0f172a"
-                android:textColor="#ffffff"
-                android:textColorHint="#64748b"
-                android:hint="Ví dụ: Ban nhan duoc phan thuong VIP 88 nghin. Truy cap link de nhan..."
-                android:gravity="top|start"
-                android:padding="10dp"
-                android:textSize="13sp"
-                android:inputType="textMultiLine"
-                android:layout_marginBottom="10dp" />
-
-            <Button
-                android:id="@+id/btnTestCustomSms"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="🔍 QUÉT TIN NHẮN NÀY &amp; BẮN CẢNH BÁO"
-                android:backgroundTint="#2563eb"
-                android:textColor="#ffffff"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <!-- Nút Giả lập demo nhanh -->
-        <Button
-            android:id="@+id/btnSimulateScam"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:text="⚡ Giả Lập Mẫu Vietcombank Lừa Đảo"
-            android:backgroundTint="#ef4444"
-            android:textColor="#ffffff"
-            android:textStyle="bold"
-            android:layout_marginBottom="16dp" />
-
-        <!-- Chi tiết cảnh báo gần nhất -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="#1e293b"
-            android:padding="14dp"
-            android:layout_marginBottom="16dp">
-
-            <TextView
-                android:id="@+id/tvAlertDetails"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Sẵn sàng bảo vệ. Khi có tin nhắn đến từ bất kỳ ai, hệ thống sẽ tự động quét bằng AI và gửi cảnh báo đỏ lên màn hình nếu phát hiện lừa đảo."
-                android:textColor="#e2e8f0"
-                android:textSize="13sp"
-                android:lineSpacingExtra="4dp" />
+                android:text="Samsung Innovation Campus (SIC-AI) • Capstone Project"
+                android:textColor="@color/text_hint"
+                android:textSize="11sp"
+                android:gravity="center"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"/>
         </LinearLayout>
-
-        <!-- Footer -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Samsung Innovation Campus (SIC-AI) • Capstone Project"
-            android:textColor="#64748b"
-            android:textSize="11sp"
-            android:layout_marginBottom="12dp" />
-
-    </LinearLayout>
-</ScrollView>
+    </ScrollView>
+</LinearLayout>
