@@ -29,6 +29,10 @@ jobs:
       run: |
         python tests/test_pipeline.py
 
+    - name: Run Module 2 Backend & API Tests
+      run: |
+        python tests/test_module2.py
+
     - name: Run End-to-End Smoke Tests
       run: |
         python smoke_test.py

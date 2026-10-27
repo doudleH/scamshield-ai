@@ -133,3 +133,38 @@ streamlit run app.py
 - **Bảo vệ PII:** Khuyến cáo người dùng không nhập mật khẩu, mã OTP và thông tin định danh cá nhân.
 - **Chống rò rỉ API Key:** Mọi cấu hình bên ngoài đều sử dụng biến môi trường hoặc Streamlit Secrets.
 - **Kênh tiếp nhận chính thức tại Việt Nam:** Hotline 156 / 5656 và [tracuutenmien.gov.vn](https://tracuutenmien.gov.vn).
+
+---
+
+## 🔌 7. Module 2 — Backend & MLOps (nhánh `feature/backend-api`)
+
+Mục tiêu: app Android kết nối được backend qua Internet thật và hình thành vòng lặp dữ liệu (Active Learning).
+
+### 7.1 Endpoint
+
+| Method | Endpoint | Chức năng |
+| :--- | :--- | :--- |
+| `POST` | `/api/v1/scan` | Phân tích tổng hợp SMS + URL, trả điểm rủi ro và bằng chứng |
+| `POST` | `/api/v1/report` | Nhận phản ánh lừa đảo, **che PII tự động** (SĐT / OTP / STK / email), ghi nối tiếp vào `data/reported_samples.jsonl` |
+| `GET` | `/api/v1/rules/sync` | Trả bộ luật offline (domain + keyword) từ `config/scam_rules.json`, hỗ trợ `ETag` / `304 Not Modified` |
+| `GET` | `/api/v1/health` | Healthcheck cho nền tảng cloud |
+
+- Dữ liệu huấn luyện liên tục: `data/reported_samples.jsonl` (append-only JSONL, mỗi dòng 1 mẫu `pending_review`).
+- Cập nhật luật nhận diện offline: chỉ cần sửa `config/scam_rules.json` + tăng `version`, app tự tải bản mới qua `If-None-Match`.
+
+### 7.2 Triển khai cloud (Render / Railway / Hugging Face Spaces)
+
+```bash
+docker build -t scamshield-api .
+docker run -p 8000:8000 -v ${PWD}/data:/app/data scamshield-api
+```
+
+- **Render:** tạo Blueprint từ `render.yaml` (repo đã có) → tự build Dockerfile, healthcheck `/api/v1/health`.
+- **Railway / HF Spaces:** trỏ vào repo, nền tảng tự nhận `Dockerfile`; app đọc cổng từ biến môi trường `PORT`.
+- **Lưu trữ bền vững:** thư mục `/app/data` nên mount volume (Render Disk) để phản ánh cộng đồng không mất khi redeploy; nếu không, dữ liệu chỉ nằm trong vòng đời container.
+
+### 7.3 Kiểm thử
+
+```bash
+python tests/test_module2.py   # hợp đồng Module 2: masking PII, append JSONL, ETag 304, healthcheck
+```

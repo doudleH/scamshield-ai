@@ -4,25 +4,33 @@ Cung cấp cổng dịch vụ API chuẩn công nghiệp cho ứng dụng di đ�
 và các hệ thống giám sát an ninh mạng tích hợp.
 """
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
+from pathlib import Path
 import uvicorn
+import hashlib
+import uuid
 import re
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 from src.predict_sms import predict_sms
 from src.predict_url import predict_url
 from src.threat_lookup import lookup_url
 from src.risk_engine import build_report
+from src.pii_mask import mask_pii, mask_sender
+
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = Path(os.getenv("SCAMSHIELD_DATA_DIR", BASE_DIR / "data"))
+RULES_FILE = BASE_DIR / "config" / "scam_rules.json"
 
 app = FastAPI(
     title="ScamShield AI - Mobile Backend REST API",
     description="API phát hiện và đánh giá rủi ro lừa đảo qua tin nhắn tiếng Việt và đường dẫn URL độc hại bằng Trí tuệ Nhân tạo. Phục vụ đồ án Capstone Samsung Innovation Campus (SIC-AI).",
-    version="1.0.0",
+    version="1.1.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -55,9 +63,12 @@ def root_info():
     return {
         "service": "ScamShield Mobile Backend",
         "status": "online",
-        "version": "1.0.0",
+        "version": "1.1.0",
         "docs": "/docs",
-        "supported_features": ["Vietnamese SMS NLP", "URL Lexical Analysis", "Trusted Whitelist"]
+        "supported_features": [
+            "Vietnamese SMS NLP", "URL Lexical Analysis", "Trusted Whitelist",
+            "Community Report (PII-masked)", "Offline Rule Sync (ETag)"
+        ]
     }
 
 @app.get("/api/v1/health", tags=["Hệ thống"])
@@ -120,70 +131,70 @@ def scan_content(request: ScanRequest):
     )
 
 class ReportRequest(BaseModel):
-    sender: Optional[str] = Field("Unknown", description="Số điện thoại hoặc brandname người gửi")
-    message: str = Field(..., description="Nội dung tin nhắn lừa đảo phản ánh")
-    risk_percent: Optional[int] = Field(0, description="Điểm phần trăm rủi ro đánh giá trên thiết bị")
-    reason: Optional[str] = Field("", description="Lý do hoặc dấu hiệu phát hiện")
+    sender: Optional[str] = Field("Unknown", max_length=64, description="Số điện thoại hoặc brandname người gửi")
+    message: str = Field(..., min_length=1, max_length=2000, description="Nội dung tin nhắn lừa đảo phản ánh (PII sẽ được che tự động)")
+    risk_percent: Optional[int] = Field(0, ge=0, le=100, description="Điểm phần trăm rủi ro đánh giá trên thiết bị")
+    reason: Optional[str] = Field("", max_length=500, description="Lý do hoặc dấu hiệu phát hiện")
 
 @app.post("/api/v1/report", tags=["Phản ánh Cộng đồng"])
 def report_scam(report_data: ReportRequest):
     """
     Tiếp nhận phản ánh tin nhắn từ người dùng di động (Android Client),
-    thực hiện ẩn danh hóa thông tin cá nhân (PII Masking) và lưu trữ.
+    thực hiện ẩn danh hóa thông tin cá nhân (PII Masking) và nối thêm vào
+    kho dữ liệu huấn luyện liên tục (Active Learning).
     """
-    os.makedirs("data", exist_ok=True)
-    report_file = os.path.join("data", "reported_samples.json")
-
-    raw_sender = (report_data.sender or "Unknown").strip()
-    digits_only = re.sub(r"\D", "", raw_sender)
-    if len(digits_only) >= 9:
-        masked_sender = digits_only[:3] + "****" + digits_only[-3:]
-    else:
-        masked_sender = raw_sender
-
     entry = {
-        "timestamp": datetime.now().isoformat(),
-        "masked_sender": masked_sender,
-        "message": report_data.message,
+        "id": uuid.uuid4().hex,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "masked_sender": mask_sender(report_data.sender),
+        "message": mask_pii(report_data.message.strip()),
         "risk_percent": report_data.risk_percent,
-        "reason": report_data.reason,
+        "reason": mask_pii((report_data.reason or "").strip()),
         "status": "pending_review"
     }
 
-    samples = []
-    if os.path.exists(report_file):
-        try:
-            with open(report_file, "r", encoding="utf-8") as f:
-                samples = json.load(f)
-        except Exception:
-            samples = []
-
-    samples.append(entry)
-    with open(report_file, "w", encoding="utf-8") as f:
-        json.dump(samples, f, ensure_ascii=False, indent=2)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    # JSONL append-only: O(1), không đọc/ghi lại toàn bộ file như JSON array
+    with open(DATA_DIR / "reported_samples.jsonl", "a", encoding="utf-8") as f:
+        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
     return {
         "status": "success",
         "message": "Đã tiếp nhận phản ánh thành công. Cảm ơn bạn đã đóng góp bảo vệ cộng đồng!",
-        "reported_id": len(samples)
+        "reported_id": entry["id"]
     }
+
+def load_rules() -> Dict[str, Any]:
+    """Đọc bộ luật nhận diện offline từ config/scam_rules.json (có thể thay bằng CDN/DB)."""
+    try:
+        with open(RULES_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {
+            "version": "unknown",
+            "updated_at": None,
+            "new_emerging_malicious_domains": [],
+            "new_scam_keywords": []
+        }
 
 @app.get("/api/v1/rules/sync", tags=["Đồng bộ Cảnh báo"])
-def sync_rules():
+def sync_rules(request: Request):
     """
     Cung cấp danh sách tên miền độc hại mới nổi và các mẫu từ khóa lừa đảo
-    để ứng dụng di động cập nhật ngoại tuyến.
+    để ứng dụng di động cập nhật ngoại tuyến. Hỗ trợ ETag: client gửi lại
+    If-None-Match sẽ nhận 304 và bỏ qua tải lại khi không có luật mới.
     """
-    return {
-        "version": "2026.10.26",
-        "new_emerging_malicious_domains": [
-            "bidvzj.com", "bidvzf.com", "vcb-verify.xyz", "vietcombank-sms.top",
-            "mbbank-online.club", "techcombank-chotdon.site", "cuc-thue-hoanthue.cc"
-        ],
-        "new_scam_keywords": [
-            "traophucloi", "dangkinhan", "nhan88k", "nohu", "gamebai", "phatnguoi"
-        ]
-    }
+    body = json.dumps(load_rules(), ensure_ascii=False, sort_keys=True)
+    etag = '"' + hashlib.sha256(body.encode("utf-8")).hexdigest()[:16] + '"'
+
+    if request.headers.get("if-none-match") == etag:
+        return Response(status_code=status.HTTP_304_NOT_MODIFIED, headers={"ETag": etag})
+
+    return Response(
+        content=body,
+        media_type="application/json",
+        headers={"ETag": etag, "Cache-Control": "public, max-age=1800"}
+    )
 
 if __name__ == "__main__":
-    uvicorn.run("api:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("api:app", host="0.0.0.0", port=int(os.getenv("PORT", "8000")), reload=True)
