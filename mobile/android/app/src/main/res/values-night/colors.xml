@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#6366f1</color>
+    <color name="primary_dark">#4f46e5</color>
+    <color name="accent">#10b981</color>
+
+    <color name="brand_primary">#6366f1</color>
+    <color name="brand_secondary">#818cf8</color>
+    <color name="brand_gradient_end">#a78bfa</color>
+
+    <color name="bg_dark">#0a0a1a</color>
+    <color name="bg_surface">#0f0f23</color>
+    <color name="bg_elevated">#1a1a3e</color>
+    <color name="bg_card">#1e1e48</color>
+    <color name="bg_input">#12122e</color>
+
+    <color name="border_subtle">#2d2d6e</color>
+    <color name="border_active">#6366f1</color>
+
+    <color name="status_safe">#10b981</color>
+    <color name="status_safe_bg">#0d2e22</color>
+    <color name="status_safe_glow">#10b98130</color>
+
+    <color name="status_caution">#f59e0b</color>
+    <color name="status_caution_bg">#2e1d0d</color>
+
+    <color name="status_danger">#ef4444</color>
+    <color name="status_danger_bg">#2e0d0d</color>
+    <color name="status_danger_glow">#ef444430</color>
+
+    <color name="text_primary">#f1f5f9</color>
+    <color name="text_secondary">#94a3b8</color>
+    <color name="text_hint">#475569</color>
+    <color name="text_disabled">#334155</color>
+
+    <color name="btn_primary">#6366f1</color>
+    <color name="btn_primary_pressed">#4f46e5</color>
+    <color name="btn_danger">#ef4444</color>
+    <color name="btn_safe">#10b981</color>
+    <color name="btn_warning">#f59e0b</color>
+    <color name="btn_neutral">#334155</color>
+    <color name="ripple_primary">#6366f130</color>
+</resources>

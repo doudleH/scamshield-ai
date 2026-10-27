@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.ScamShieldAI" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/brand_primary</item>
+        <item name="colorOnPrimary">@color/text_primary</item>
+        <item name="colorPrimaryContainer">@color/bg_elevated</item>
+        <item name="colorSecondary">@color/status_safe</item>
+        <item name="colorTertiary">@color/status_danger</item>
+        <item name="android:windowBackground">@color/bg_dark</item>
+        <item name="android:statusBarColor">@color/bg_dark</item>
+        <item name="android:navigationBarColor">@color/bg_surface</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <style name="Theme.ScamShieldAI.Dialog" parent="ThemeOverlay.Material3.Dialog">
+        <item name="android:windowBackground">@color/bg_elevated</item>
+        <item name="colorPrimary">@color/brand_primary</item>
+    </style>
+</resources>

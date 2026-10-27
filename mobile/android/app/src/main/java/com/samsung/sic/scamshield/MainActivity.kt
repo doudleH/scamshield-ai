@@ -9,58 +9,91 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.cardview.widget.CardView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import com.samsung.sic.scamshield.history.AlertDatabase
+import com.samsung.sic.scamshield.history.AlertHistoryActivity
+import com.samsung.sic.scamshield.history.AlertRecord
+import com.samsung.sic.scamshield.scan.ScanResultsActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-/**
- * MainActivity: Giao diện chính của ứng dụng di động ScamShield AI.
- * - Quản lý công tắc BẬT / TẮT lá chắn bảo vệ SMS linh hoạt.
- * - Mở cài đặt quyền ứng dụng trong hệ thống Android khi người dùng muốn thu hồi quyền.
- * - Hộp thử nghiệm tin nhắn trực tiếp (Sandbox Tester) giúp kiểm tra AI trên mọi loại nội dung
- *   mà không lo bị bộ lọc nhà mạng viễn thông chặn.
- * - Nút giả lập demo nhanh phục vụ thuyết trình đồ án trước hội đồng.
- */
 class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val PERMISSION_REQUEST_CODE = 2026
         private const val PREFS_NAME = "scamshield_prefs"
         private const val KEY_PROTECTION_ENABLED = "is_protection_enabled"
+        private const val KEY_DARK_MODE = "is_dark_mode"
     }
 
     private lateinit var tvStatus: TextView
     private lateinit var tvDetails: TextView
+    private lateinit var cardStatus: CardView
+    private lateinit var cardAlertDetails: CardView
+    private lateinit var viewAlertDetailsAccent: View
     private lateinit var btnToggleProtection: Button
     private lateinit var btnOpenSettings: Button
+    private lateinit var btnThemeToggle: ImageButton
     private lateinit var etCustomSms: EditText
     private lateinit var btnTestCustomSms: Button
-    private lateinit var btnSimulate: Button
+    private lateinit var cardScanInbox: CardView
+    private lateinit var cardAlertHistory: CardView
+    private lateinit var btnReportCurrentAlert: Button
+    private lateinit var btnOpenCurrentSms: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val isDarkMode = prefs.getBoolean(KEY_DARK_MODE, true)
+        val defaultMode = if (isDarkMode) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+        if (AppCompatDelegate.getDefaultNightMode() != defaultMode) {
+            AppCompatDelegate.setDefaultNightMode(defaultMode)
+        }
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         tvStatus = findViewById(R.id.tvProtectionStatus)
         tvDetails = findViewById(R.id.tvAlertDetails)
+        cardStatus = findViewById(R.id.cardStatus)
+        cardAlertDetails = findViewById(R.id.cardAlertDetails)
+        viewAlertDetailsAccent = findViewById(R.id.viewAlertDetailsAccent)
         btnToggleProtection = findViewById(R.id.btnToggleProtection)
         btnOpenSettings = findViewById(R.id.btnOpenSettings)
+        btnThemeToggle = findViewById(R.id.btnThemeToggle)
         etCustomSms = findViewById(R.id.etCustomSms)
         btnTestCustomSms = findViewById(R.id.btnTestCustomSms)
-        btnSimulate = findViewById(R.id.btnSimulateScam)
+        cardScanInbox = findViewById(R.id.cardScanInbox)
+        cardAlertHistory = findViewById(R.id.cardAlertHistory)
+        btnReportCurrentAlert = findViewById(R.id.btnReportCurrentAlert)
+        btnOpenCurrentSms = findViewById(R.id.btnOpenCurrentSms)
 
-        // Khởi tạo kênh thông báo
         NotificationHelper.createNotificationChannel(this)
 
-        // Cập nhật giao diện trạng thái ban đầu
+        updateThemeToggleIcon(isDarkMode)
         updateUIState()
 
-        // 1. Nút Bật / Tắt hoặc Cấp quyền
+        btnThemeToggle.setOnClickListener {
+            val currentMode = prefs.getBoolean(KEY_DARK_MODE, true)
+            val newMode = !currentMode
+            prefs.edit().putBoolean(KEY_DARK_MODE, newMode).apply()
+            updateThemeToggleIcon(newMode)
+            AppCompatDelegate.setDefaultNightMode(
+                if (newMode) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+            )
+        }
+
         btnToggleProtection.setOnClickListener {
             if (!hasSmsPermissions()) {
                 requestSmsPermissions()
@@ -69,22 +102,37 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // 2. Nút Mở cài đặt quyền hệ thống Android
+        cardScanInbox.setOnClickListener {
+            if (!hasSmsPermissions()) {
+                requestSmsPermissions()
+            } else {
+                startActivity(Intent(this, ScanResultsActivity::class.java))
+            }
+        }
+
+        val tvAlertHistorySubtitle: TextView = findViewById(R.id.tvAlertHistorySubtitle)
+        AlertDatabase.getDatabase(this).alertDao().getTotalCount().observe(this) { count ->
+            if (count != null && count > 0) {
+                tvAlertHistorySubtitle.text = "${FormatUtils.formatBadgeCount(count)} mối đe dọa"
+                tvAlertHistorySubtitle.setTextColor(ContextCompat.getColor(this, R.color.status_danger))
+            } else {
+                tvAlertHistorySubtitle.text = "Xem các mối đe dọa"
+                tvAlertHistorySubtitle.setTextColor(ContextCompat.getColor(this, R.color.text_secondary))
+            }
+        }
+
+        cardAlertHistory.setOnClickListener {
+            startActivity(Intent(this, AlertHistoryActivity::class.java))
+        }
+
         btnOpenSettings.setOnClickListener {
             openAppSettings()
         }
 
-        // 3. Hộp Thử Nghiệm Tin Nhắn Trực Tiếp (Sandbox Tester)
         btnTestCustomSms.setOnClickListener {
             testCustomMessage()
         }
 
-        // 4. Nút Giả lập demo nhanh mẫu Vietcombank
-        btnSimulate.setOnClickListener {
-            simulateIncomingScamMessage()
-        }
-
-        // Xử lý dữ liệu nếu người dùng mở app từ thông báo đẩy
         handleIntentData()
     }
 
@@ -93,45 +141,51 @@ class MainActivity : AppCompatActivity() {
         updateUIState()
     }
 
-    /**
-     * Kiểm tra xem các quyền SMS cốt lõi đã được cấp chưa
-     */
+    private fun updateThemeToggleIcon(isDark: Boolean) {
+        if (isDark) {
+            btnThemeToggle.setImageResource(R.drawable.ic_light_mode)
+            btnThemeToggle.imageTintList = ContextCompat.getColorStateList(this, R.color.text_primary)
+            btnThemeToggle.contentDescription = "Chuyển sang chế độ sáng"
+        } else {
+            btnThemeToggle.setImageResource(R.drawable.ic_dark_mode)
+            btnThemeToggle.imageTintList = ContextCompat.getColorStateList(this, R.color.text_primary)
+            btnThemeToggle.contentDescription = "Chuyển sang chế độ tối"
+        }
+    }
+
     private fun hasSmsPermissions(): Boolean {
         val hasReceive = ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS) == PackageManager.PERMISSION_GRANTED
         val hasRead = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED
         return hasReceive && hasRead
     }
 
-    /**
-     * Đồng bộ trạng thái hiển thị của nút bấm và nhãn bảo vệ
-     */
     private fun updateUIState() {
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val isEnabled = prefs.getBoolean(KEY_PROTECTION_ENABLED, true)
 
         if (!hasSmsPermissions()) {
             tvStatus.text = "🔴 THIẾU QUYỀN ĐỌC TIN NHẮN"
-            tvStatus.setTextColor(Color.parseColor("#ef4444"))
-            btnToggleProtection.text = "🔑 CẤP QUYỀN ĐỌC TIN NHẮN SMS"
-            btnToggleProtection.setBackgroundColor(Color.parseColor("#2563eb"))
+            tvStatus.setTextColor(ContextCompat.getColor(this, R.color.status_danger))
+            btnToggleProtection.text = "CẤP QUYỀN ĐỌC TIN NHẮN SMS"
+            btnToggleProtection.backgroundTintList = ContextCompat.getColorStateList(this, R.color.brand_primary)
+            cardStatus.setCardBackgroundColor(ContextCompat.getColor(this, R.color.status_danger_bg))
         } else {
             if (isEnabled) {
                 tvStatus.text = "🟢 LÁ CHẮN ĐANG BẬT (BẢO VỆ 24/7)"
-                tvStatus.setTextColor(Color.parseColor("#10b981"))
-                btnToggleProtection.text = "⏸️ TẠM DỪNG LÁ CHẮN BẢO VỆ"
-                btnToggleProtection.setBackgroundColor(Color.parseColor("#f59e0b"))
+                tvStatus.setTextColor(ContextCompat.getColor(this, R.color.status_safe))
+                btnToggleProtection.text = "TẠM DỪNG LÁ CHẮN BẢO VỆ"
+                btnToggleProtection.backgroundTintList = ContextCompat.getColorStateList(this, R.color.btn_warning)
+                cardStatus.setCardBackgroundColor(ContextCompat.getColor(this, R.color.status_safe_bg))
             } else {
                 tvStatus.text = "🟡 LÁ CHẮN ĐÃ TẮT (TẠM DỪNG)"
-                tvStatus.setTextColor(Color.parseColor("#f59e0b"))
-                btnToggleProtection.text = "▶️ KÍCH HOẠT LÁ CHẮN BẢO VỆ"
-                btnToggleProtection.setBackgroundColor(Color.parseColor("#10b981"))
+                tvStatus.setTextColor(ContextCompat.getColor(this, R.color.status_caution))
+                btnToggleProtection.text = "KÍCH HOẠT LÁ CHẮN BẢO VỆ"
+                btnToggleProtection.backgroundTintList = ContextCompat.getColorStateList(this, R.color.btn_safe)
+                cardStatus.setCardBackgroundColor(ContextCompat.getColor(this, R.color.status_caution_bg))
             }
         }
     }
 
-    /**
-     * Đổi trạng thái Bật <-> Tắt bảo vệ
-     */
     private fun toggleProtectionState() {
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val currentState = prefs.getBoolean(KEY_PROTECTION_ENABLED, true)
@@ -141,26 +195,20 @@ class MainActivity : AppCompatActivity() {
         updateUIState()
 
         if (newState) {
-            Toast.makeText(this, "✅ Đã kích hoạt lá chắn bảo vệ tin nhắn 24/7!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Đã kích hoạt chế độ bảo vệ 24/7", Toast.LENGTH_SHORT).show()
         } else {
-            Toast.makeText(this, "⏸️ Đã tạm dừng bảo vệ. App sẽ không quét tin nhắn đến.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Đã tạm dừng bảo vệ tin nhắn", Toast.LENGTH_SHORT).show()
         }
     }
 
-    /**
-     * Mở trang Cài đặt ứng dụng của Android để người dùng xem hoặc thu hồi quyền
-     */
     private fun openAppSettings() {
         val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
             data = Uri.fromParts("package", packageName, null)
         }
         startActivity(intent)
-        Toast.makeText(this, "Bạn có thể xem hoặc thay đổi quyền SMS trong mục này", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "Quản lý quyền tin nhắn SMS trong phần Cài đặt", Toast.LENGTH_LONG).show()
     }
 
-    /**
-     * Yêu cầu cấp quyền đọc tin nhắn SMS
-     */
     private fun requestSmsPermissions() {
         val permissions = mutableListOf(Manifest.permission.RECEIVE_SMS, Manifest.permission.READ_SMS)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -168,8 +216,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         AlertDialog.Builder(this)
-            .setTitle("🛡️ Cấp Quyền Bảo Vệ SMS")
-            .setMessage("ScamShield AI cần quyền đọc tin nhắn để tự động phát hiện mã độc, đường link giả mạo ngân hàng ngay khi tin nhắn vừa gửi đến.\n\nCam kết: Hệ thống ẩn danh hóa mã OTP tại chỗ, tuyệt đối không lưu trữ thông tin cá nhân của bạn!")
+            .setTitle("Quyền truy cập SMS")
+            .setMessage("ScamShield yêu cầu quyền đọc tin nhắn để tự động phát hiện đường dẫn lừa đảo và số điện thoại giả mạo ngân hàng theo thời gian thực.\n\nThông tin nhạy cảm và mã xác thực ngân hàng sẽ được mã hóa cục bộ.")
             .setPositiveButton("Đồng ý") { _, _ ->
                 ActivityCompat.requestPermissions(this, permissions.toTypedArray(), PERMISSION_REQUEST_CODE)
             }
@@ -183,43 +231,84 @@ class MainActivity : AppCompatActivity() {
             val allGranted = grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }
             if (allGranted) {
                 getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().putBoolean(KEY_PROTECTION_ENABLED, true).apply()
-                Toast.makeText(this, "✅ Đã cấp quyền và kích hoạt bảo vệ thành công!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Đã kích hoạt bảo vệ thành công", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, "⚠️ Bạn chưa cấp đủ quyền đọc SMS cho ứng dụng.", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Ứng dụng chưa được cấp đủ quyền đọc SMS", Toast.LENGTH_LONG).show()
             }
             updateUIState()
         }
     }
 
-    /**
-     * Thử nghiệm quét bất kỳ nội dung tin nhắn nào người dùng nhập vào
-     */
     private fun testCustomMessage() {
         val input = etCustomSms.text.toString().trim()
         if (input.isEmpty()) {
-            Toast.makeText(this, "Vui lòng nhập nội dung tin nhắn để thử nghiệm!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Vui lòng nhập nội dung tin nhắn để kiểm tra", Toast.LENGTH_SHORT).show()
             return
         }
 
-        Toast.makeText(this, "Đang phân tích tin nhắn bằng AI...", Toast.LENGTH_SHORT).show()
-
-        // Gọi trực tiếp bộ phân tích AI Cục bộ
         val detector = SmsReceiver()
         val result = detector.evaluateScamRiskOnDevice("0383775033", input)
 
+        cardAlertDetails.visibility = View.VISIBLE
+        val accentColor = if (result.isScam) {
+            if (result.alertLevel == "DANGEROUS") ContextCompat.getColor(this, R.color.status_danger)
+            else ContextCompat.getColor(this, R.color.status_caution)
+        } else {
+            ContextCompat.getColor(this, R.color.status_safe)
+        }
+        viewAlertDetailsAccent.setBackgroundColor(accentColor)
+
         tvDetails.text = """
-            📊 KẾT QUẢ QUÉT THỬ NGHIỆM:
-            • Người gửi: 0383775033 (SIM Thử Nghiệm)
-            • Đánh giá AI: ${result.statusLabel}
-            • Mức độ nguy hiểm: ${result.riskPercent}%
+            KẾT QUẢ PHÂN TÍCH:
+            • Người gửi: 0383775033
+            • Đánh giá: ${result.statusLabel}
+            • Mức độ rủi ro: ${result.riskPercent}%
             • Dấu hiệu phát hiện: ${result.reason}
             • Nội dung: "$input"
         """.trimIndent()
 
         if (result.isScam) {
+            btnOpenCurrentSms.visibility = View.VISIBLE
+            btnOpenCurrentSms.setOnClickListener {
+                try {
+                    val uri = Uri.parse("smsto:0383775033")
+                    startActivity(Intent(Intent.ACTION_VIEW, uri))
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Không thể mở ứng dụng tin nhắn", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            btnReportCurrentAlert.visibility = View.VISIBLE
+            btnReportCurrentAlert.setOnClickListener {
+                val reportIntent = Intent(this, com.samsung.sic.scamshield.report.ReportActivity::class.java).apply {
+                    putExtra("EXTRA_SENDER", "0383775033")
+                    putExtra("EXTRA_RISK", result.riskPercent)
+                    putExtra("EXTRA_BODY", input)
+                    putExtra("EXTRA_REASON", result.reason)
+                }
+                startActivity(reportIntent)
+            }
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                try {
+                    val alertDao = AlertDatabase.getDatabase(applicationContext).alertDao()
+                    alertDao.insertAlert(
+                        AlertRecord(
+                            sender = "0383775033",
+                            timestamp = System.currentTimeMillis(),
+                            preview = if (input.length > 100) input.take(100) + "..." else input,
+                            riskPercent = result.riskPercent,
+                            alertLevel = result.alertLevel,
+                            reason = result.reason
+                        )
+                    )
+                } catch (e: Exception) {
+                }
+            }
+
             NotificationHelper.showScamAlertNotification(
                 context = this,
-                sender = "0383775033 (Thử Nghiệm)",
+                sender = "0383775033",
                 alertLevel = result.alertLevel,
                 statusLabel = result.statusLabel,
                 riskPercent = result.riskPercent,
@@ -227,28 +316,10 @@ class MainActivity : AppCompatActivity() {
                 fullMessage = input
             )
         } else {
-            Toast.makeText(this, "✅ Tin nhắn được đánh giá an toàn, không có dấu hiệu lừa đảo.", Toast.LENGTH_LONG).show()
+            btnOpenCurrentSms.visibility = View.GONE
+            btnReportCurrentAlert.visibility = View.GONE
+            Toast.makeText(this, "Nội dung an toàn, không phát hiện dấu hiệu lừa đảo", Toast.LENGTH_LONG).show()
         }
-    }
-
-    /**
-     * Giả lập tin nhắn lừa đảo mẫu Vietcombank
-     */
-    private fun simulateIncomingScamMessage() {
-        Toast.makeText(this, "⚡ Đang bắn thông báo giả lập nhận SMS lừa đảo...", Toast.LENGTH_SHORT).show()
-
-        val sampleSender = "Vietcombank-Fake"
-        val sampleBody = "Thong bao: Tai khoan VCB Digibank cua quy khach bi khoa do dang nhap bat thuong. Vui long truy cap http://vcb-digibank-login.xyz/verify de xac minh trong 24h."
-
-        NotificationHelper.showScamAlertNotification(
-            context = this,
-            sender = sampleSender,
-            alertLevel = "DANGEROUS",
-            statusLabel = "CẢNH BÁO LỪA ĐẢO NGUY CƠ CAO",
-            riskPercent = 96,
-            reason = "Chứa liên kết mạo danh tên miền ngân hàng (.xyz) và từ khóa đe dọa trong 24h",
-            fullMessage = sampleBody
-        )
     }
 
     private fun handleIntentData() {
@@ -258,14 +329,35 @@ class MainActivity : AppCompatActivity() {
         val reason = intent.getStringExtra("EXTRA_REASON")
 
         if (!sender.isNullOrEmpty() && !body.isNullOrEmpty()) {
+            cardAlertDetails.visibility = View.VISIBLE
+            btnOpenCurrentSms.visibility = View.VISIBLE
+            btnOpenCurrentSms.setOnClickListener {
+                try {
+                    val uri = Uri.parse("smsto:${Uri.encode(sender)}")
+                    startActivity(Intent(Intent.ACTION_VIEW, uri))
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Không thể mở ứng dụng tin nhắn", Toast.LENGTH_SHORT).show()
+                }
+            }
+            btnReportCurrentAlert.visibility = View.VISIBLE
+            btnReportCurrentAlert.setOnClickListener {
+                val reportIntent = Intent(this, com.samsung.sic.scamshield.report.ReportActivity::class.java).apply {
+                    putExtra("EXTRA_SENDER", sender)
+                    putExtra("EXTRA_RISK", risk)
+                    putExtra("EXTRA_BODY", body)
+                    putExtra("EXTRA_REASON", reason ?: "")
+                }
+                startActivity(reportIntent)
+            }
+            viewAlertDetailsAccent.setBackgroundColor(ContextCompat.getColor(this, R.color.status_danger))
             tvDetails.text = """
-                🚨 CHI TIẾT CẢNH BÁO VỪA PHÁT HIỆN:
+                CHI TIẾT CẢNH BÁO:
                 • Người gửi: $sender
-                • Độ nguy hiểm: $risk%
+                • Mức độ rủi ro: $risk%
                 • Dấu hiệu: $reason
                 • Nội dung: "$body"
                 
-                👉 Khuyến nghị: Xóa ngay tin nhắn và KHÔNG truy cập liên kết!
+                Khuyến cáo: Xóa tin nhắn và không truy cập liên kết đính kèm.
             """.trimIndent()
         }
     }
