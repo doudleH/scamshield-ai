@@ -168,3 +168,11 @@ docker run -p 8000:8000 -v ${PWD}/data:/app/data scamshield-api
 ```bash
 python tests/test_module2.py   # hợp đồng Module 2: masking PII, append JSONL, ETag 304, healthcheck
 ```
+
+### 7.4 Kết nối từ app Android
+
+- Địa chỉ backend tập trung tại `BuildConfig.API_BASE_URL` (`mobile/android/app/build.gradle`), mặc định `http://10.0.2.2:8000` (emulator).
+- Build trỏ máy thật / bản cloud: `./gradlew assembleDebug -PAPI_BASE_URL=https://<host>`
+- `MainActivity` gọi `/api/v1/rules/sync` mỗi lần mở app (`ETag` → 304 khi không có luật mới, im lặng khi offline); luật tải về được `SmsReceiver` dùng ngay ở tầng heuristic on-device.
+- `ReportActivity` gửi `/api/v1/report`, chỉ báo "thành công" khi máy chủ trả HTTP 200 (trước đây báo thành công cả khi mất mạng).
+- Toàn bộ lời gọi mạng đi qua một cổng duy nhất: `mobile/android/app/src/main/java/com/samsung/sic/scamshield/BackendApi.kt`.
