@@ -139,6 +139,8 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         updateUIState()
+        // Nền: cập nhật bộ luật nhận diện offline từ backend (ETag, im lặng khi lỗi/luật cũ)
+        lifecycleScope.launch { RulesSync.sync(this@MainActivity) }
     }
 
     private fun updateThemeToggleIcon(isDark: Boolean) {

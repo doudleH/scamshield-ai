@@ -15,6 +15,11 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // Địa chỉ backend (Module 2). Override khi build:
+        //   ./gradlew assembleDebug -PAPI_BASE_URL=https://scamshield-api.onrender.com
+        def apiBaseUrl = (project.findProperty("API_BASE_URL") ?: "http://10.0.2.2:8000").toString()
+        buildConfigField "String", "API_BASE_URL", "\"${apiBaseUrl}\""
     }
 
     buildTypes {
@@ -35,6 +40,7 @@ android {
 
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 
     applicationVariants.all { variant ->

@@ -13,15 +13,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONObject
-import java.io.OutputStreamWriter
-import java.net.HttpURLConnection
-import java.net.URL
 
 class SmsReceiver : BroadcastReceiver() {
 
     companion object {
         private const val TAG = "ScamShield_SmsReceiver"
-        private const val BACKEND_API_URL = "http://10.0.2.2:8000/api/v1/scan"
 
         private val TRUSTED_BANK_SENDERS = setOf(
             "VIETCOMBANK", "VCB", "MBBANK", "TECHCOMBANK", "TCB", "BIDV",
@@ -87,7 +83,12 @@ class SmsReceiver : BroadcastReceiver() {
     }
 
     private fun processSmsDetection(context: Context, sender: String, displaySms: String, safeSms: String) {
-        val localResult = evaluateScamRiskOnDevice(sender, displaySms)
+        val localResult = evaluateScamRiskOnDevice(
+            sender = sender,
+            content = displaySms,
+            extraDomains = RulesSync.syncedDomains(context),
+            extraKeywords = RulesSync.syncedKeywords(context)
+        )
 
         if (localResult.isScam) {
             Log.i(TAG, "Phát hiện mối đe dọa: ${localResult.reason} (${localResult.riskPercent}%)")
@@ -123,59 +124,52 @@ class SmsReceiver : BroadcastReceiver() {
             return
         }
 
-        try {
-            val url = URL(BACKEND_API_URL)
-            val conn = url.openConnection() as HttpURLConnection
-            conn.requestMethod = "POST"
-            conn.setRequestProperty("Content-Type", "application/json; charset=utf-8")
-            conn.setRequestProperty("Accept", "application/json")
-            conn.doOutput = true
-            conn.connectTimeout = 2000
-            conn.readTimeout = 2500
+        val payload = JSONObject().apply {
+            put("sms_text", safeSms)
+            put("url_text", "")
+        }
 
-            val payload = JSONObject().apply {
-                put("sms_text", safeSms)
-                put("url_text", "")
-            }
-
-            OutputStreamWriter(conn.outputStream).use { writer ->
-                writer.write(payload.toString())
-                writer.flush()
-            }
-
-            if (conn.responseCode == HttpURLConnection.HTTP_OK) {
-                val responseText = conn.inputStream.bufferedReader().use { it.readText() }
-                val jsonRes = JSONObject(responseText)
-                val alertLevel = jsonRes.optString("alert_level", "SAFE")
-                val statusLabel = jsonRes.optString("status_label", "")
-                val riskScore = jsonRes.optDouble("overall_risk_score", 0.0)
-                val reasonsArray = jsonRes.optJSONArray("reasons")
-
-                val reasonsSummary = if (reasonsArray != null && reasonsArray.length() > 0) {
-                    reasonsArray.getString(0)
-                } else {
-                    "Phát hiện dấu hiệu rủi ro từ máy chủ phân tích."
-                }
-
-                if (alertLevel == "DANGEROUS" || alertLevel == "CAUTION") {
-                    NotificationHelper.showScamAlertNotification(
-                        context = context,
-                        sender = sender,
-                        alertLevel = alertLevel,
-                        statusLabel = statusLabel,
-                        riskPercent = (riskScore * 100).toInt(),
-                        reason = reasonsSummary,
-                        fullMessage = displaySms
-                    )
-                }
-            }
-            conn.disconnect()
-        } catch (e: Exception) {
+        val response = BackendApi.post("/api/v1/scan", payload.toString(), timeoutMs = 2500)
+        if (response == null || response.code != 200) {
             Log.d(TAG, "Dịch vụ máy chủ tạm thời ngoại tuyến, sử dụng kết quả kiểm tra thiết bị.")
+            return
+        }
+
+        try {
+            val jsonRes = JSONObject(response.body)
+            val alertLevel = jsonRes.optString("alert_level", "SAFE")
+            val statusLabel = jsonRes.optString("status_label", "")
+            val riskScore = jsonRes.optDouble("overall_risk_score", 0.0)
+            val reasonsArray = jsonRes.optJSONArray("reasons")
+
+            val reasonsSummary = if (reasonsArray != null && reasonsArray.length() > 0) {
+                reasonsArray.getString(0)
+            } else {
+                "Phát hiện dấu hiệu rủi ro từ máy chủ phân tích."
+            }
+
+            if (alertLevel == "DANGEROUS" || alertLevel == "CAUTION") {
+                NotificationHelper.showScamAlertNotification(
+                    context = context,
+                    sender = sender,
+                    alertLevel = alertLevel,
+                    statusLabel = statusLabel,
+                    riskPercent = (riskScore * 100).toInt(),
+                    reason = reasonsSummary,
+                    fullMessage = displaySms
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Phản hồi máy chủ không hợp lệ: ${e.message}")
         }
     }
 
-    fun evaluateScamRiskOnDevice(sender: String, content: String): OnDeviceResult {
+    fun evaluateScamRiskOnDevice(
+        sender: String,
+        content: String,
+        extraDomains: List<String> = emptyList(),
+        extraKeywords: List<String> = emptyList()
+    ): OnDeviceResult {
         val lower = content.lowercase()
         var riskScore = 0
         val reasons = mutableListOf<String>()
@@ -226,6 +220,14 @@ class SmsReceiver : BroadcastReceiver() {
         )
         val regularMatches = regularScamKeywords.filter { lower.contains(it) }
 
+        val syncedDomainHit = allExtractedDomains.firstOrNull { domain ->
+            extraDomains.any { domain == it || domain.endsWith(".$it") }
+        }
+        if (syncedDomainHit != null) {
+            riskScore = maxOf(riskScore, 99)
+            reasons.add("Tên miền nằm trong danh sách lừa đảo cập nhật từ máy chủ: '$syncedDomainHit'")
+        }
+
         if (hasBankTyposquatting) {
             riskScore = maxOf(riskScore, 98)
             reasons.add("Phát hiện tên miền lạ mạo danh thương hiệu ngân hàng: '$fakeBankDomainName'")
@@ -250,6 +252,15 @@ class SmsReceiver : BroadcastReceiver() {
         } else if (regularMatches.size == 1 && hasUntrustedDomain) {
             riskScore = maxOf(riskScore, 88)
             reasons.add("Yêu cầu thao tác khẩn cấp kèm liên kết ngoài chưa được xác thực")
+        }
+
+        val syncedMatches = extraKeywords.filter { lower.contains(it) }
+        if (syncedMatches.size >= 2) {
+            riskScore = maxOf(riskScore, 95)
+            reasons.add("Khớp từ khóa lừa đảo cập nhật từ máy chủ: ${syncedMatches.take(3).joinToString(", ")}")
+        } else if (syncedMatches.size == 1 && hasUntrustedDomain) {
+            riskScore = maxOf(riskScore, 92)
+            reasons.add("Dấu hiệu lừa đảo mới cập nhật kèm liên kết ngoài chưa xác thực")
         }
 
         val isPersonalPhone = sender.startsWith("+84") || (sender.startsWith("0") && sender.length in 10..12)

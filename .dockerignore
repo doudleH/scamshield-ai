@@ -1,0 +1,15 @@
+.git
+.github
+.devcontainer
+data
+mobile
+reports
+tests
+training
+__pycache__
+*.pyc
+.venv
+venv
+*.apk
+*.md
+!README.md
