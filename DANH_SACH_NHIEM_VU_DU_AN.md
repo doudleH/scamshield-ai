@@ -70,37 +70,21 @@ Các hạng mục dưới đây được chia theo từng Module độc lập, r
 
 ---
 
-### MODULE 1: NÂNG CẤP TÍNH NĂNG ỨNG DỤNG ANDROID (ANDROID CLIENT)
-* **Nhánh Git phụ trách:** `feature/android-app`
-* *Mục tiêu: Hoàn thiện tính năng trải nghiệm người dùng, quét toàn diện thiết bị và chuẩn bị file APK đóng gói cuối cùng.*
-
-* **Nhiệm vụ 1.1: Xây dựng tính năng "Quét Hộp thư Đến" (Scan SMS Inbox)**
-  * Mô tả: Khi người dùng bấm nút "Quét hộp thư", ứng dụng sử dụng `contentResolver.query(Telephony.Sms.Inbox.CONTENT_URI, ...)` để quét toàn bộ các tin nhắn đã có sẵn trong điện thoại.
-  * Kết quả hiển thị: Một hộp thoại (Dialog) hoặc màn hình danh sách liệt kê các tin nhắn trong quá khứ có chứa nội dung lừa đảo kèm lý do phát hiện.
-* **Nhiệm vụ 1.2: Xây dựng màn hình "Lịch sử Cảnh báo" (Alert History / Threat Log)**
-  * Mô tả: Mỗi khi `SmsReceiver` hoặc công cụ Quét phát hiện một tin nhắn lừa đảo, lưu bản ghi vào bộ nhớ cục bộ (sử dụng Room Database hoặc SharedPreferences) gồm: Số người gửi, Thời gian nhận, Nội dung vắn tắt, Mức độ rủi ro.
-  * Giao diện: Hiển thị danh sách các cảnh báo gần nhất để người dùng xem lại bất cứ lúc nào.
-* **Nhiệm vụ 1.3: Nút "Báo cáo Tin nhắn Nghi ngờ" (Community Report Button)**
-  * Mô tả: Cho phép người dùng bấm nút gửi nội dung tin nhắn nghi ngờ lên hệ thống máy chủ để đội ngũ quản trị kiểm duyệt và cập nhật mô hình.
-* **Nhiệm vụ 1.4: Tối ưu Giao diện UI/UX & Đóng gói File Cài đặt APK**
-  * Mô tả: Áp dụng Material 3, tinh chỉnh tông màu nhận diện hiện đại, bổ sung biểu tượng ứng dụng (App Icon) chuyên nghiệp.
-  * Đóng gói: Tiến hành chạy `Build` -> `Build APK(s)` trong Android Studio để tạo ra file `ScamShield-AI-v1.0.apk` sẵn sàng cài trực tiếp lên điện thoại của ban giám khảo.
+### MODULE 1: NÂNG CẤP TÍNH NĂNG ỨNG DỤNG ANDROID (ANDROID CLIENT) — [ĐÃ HOÀN THÀNH & ĐÃ MERGE VÀO MAIN]
+* **Nhánh Git phụ trách:** `feature/android-app` (Đã gộp thành công qua PR #1)
+* **Thành quả bàn giao:** File cài đặt sẵn [`mobile/release/ScamShield-AI-v1.0.apk`](mobile/release/ScamShield-AI-v1.0.apk), Quét hộp thư (`SmsInboxScanner`), Lịch sử cảnh báo Room DB (`AlertDatabase`), Gửi báo cáo (`ReportActivity`), Giao diện Material Dark/Light mode.
 
 ---
 
-### MODULE 2: MỞ RỘNG MÁY CHỦ BACKEND & DỊCH VỤ ĐÁM MÂY (BACKEND & MLOPS)
-* **Nhánh Git phụ trách:** `feature/backend-api`
-* *Mục tiêu: Đảm bảo ứng dụng di động có thể kết nối Internet thực tế và xây dựng vòng lặp phản hồi dữ liệu (Active Learning).*
+### MODULE 2: MỞ RỘNG MÁY CHỦ BACKEND & DỊCH VỤ ĐÁM MÂY (BACKEND & MLOPS) — [ĐÃ HOÀN THÀNH & ĐÃ MERGE VÀO MAIN]
+* **Nhánh Git phụ trách:** `feature/backend-api` (Đã gộp thành công vào `main`)
+* **Thành quả bàn giao:**
+  * **Nhiệm vụ 2.1 (Hoàn thành):** Endpoint `/api/v1/report` tiếp nhận phản ánh lừa đảo, tích hợp module `src/pii_mask.py` tự động che giấu số điện thoại, số tài khoản, mã OTP, email cá nhân và lưu nhật ký nối tiếp dạng JSONL an toàn.
+  * **Nhiệm vụ 2.2 (Hoàn thành):** Endpoint `/api/v1/rules/sync` đồng bộ từ điển tên miền và từ khóa lừa đảo mới nổi từ file cấu hình `config/scam_rules.json`, hỗ trợ HTTP ETag (Header `If-None-Match` trả về 304 Not Modified giúp tiết kiệm băng thông và pin thiết bị).
+  * **Nhiệm vụ 2.3 (Hoàn thành):** Đóng gói Container `Dockerfile`, `.dockerignore` và cấu hình 1-click Cloud Deploy `render.yaml` sẵn sàng triển khai Backend lên Render Cloud.
+  * **Tích hợp phía Android:** Mã nguồn Android đã được bổ sung `BackendApi.kt` và `RulesSync.kt`, `ReportActivity.kt` đã kết nối thực tế tới API máy chủ.
+  * **Kiểm thử tự động:** Bổ sung bộ kiểm thử `tests/test_module2.py` đạt 100% test contract.
 
-* **Nhiệm vụ 2.1: Bổ sung Endpoint Tiếp nhận Phản ánh `/api/v1/report`**
-  * Mô tả: Tiếp nhận dữ liệu tin nhắn lừa đảo do người dùng báo cáo từ app Android hoặc Web Streamlit.
-  * Xử lý: Tự động che số điện thoại cá nhân (PII Masking), lưu trữ mẫu mới vào hàng đợi dữ liệu (`data/reported_samples.json` hoặc cơ sở dữ liệu) phục vụ việc tái huấn luyện mô hình (Continuous Training).
-* **Nhiệm vụ 2.2: Bổ sung Endpoint Đồng bộ Danh sách Đen Động `/api/v1/rules/sync`**
-  * Mô tả: Trả về danh sách các tên miền lừa đảo mới nổi và từ khóa độc hại cập nhật trong ngày.
-  * Ý nghĩa: Ứng dụng Android có thể tải danh sách này về để nâng cấp khả năng nhận diện offline mà không cần người dùng phải cài lại app mới.
-* **Nhiệm vụ 2.3: Triển khai Backend lên Máy chủ Trực tuyến (Cloud Deployment)**
-  * Mô tả: Đưa file `api.py` chạy trên một nền tảng trực tuyến công khai (ví dụ: Render, Railway, Hugging Face Spaces hoặc VPS có hỗ trợ SSL/HTTPS).
-  * Ý nghĩa: Giúp điện thoại Android thật khi dùng mạng 4G/5G ngoài hội trường chấm thi vẫn có thể gọi được API backend thông qua Internet.
 
 ---
 
