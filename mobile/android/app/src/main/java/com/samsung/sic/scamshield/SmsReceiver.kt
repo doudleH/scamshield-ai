@@ -216,7 +216,7 @@ class SmsReceiver : BroadcastReceiver() {
             "phan thuong", "pháº§n thÆ°á»Ÿng", "trung thuong", "trÃºng thÆ°á»Ÿng", "nhan qua", "nháº­n quÃ ",
             "tri an", "tri Ã¢n", "vip", "khoa the", "khÃ³a tháº»", "tai khoan bi khoa", "tÃ i khoáº£n bá»‹ khÃ³a",
             "xac minh", "xÃ¡c minh", "24h", "phat nguoi", "pháº¡t nguá»™i", "cong an", "cÃ´ng an",
-            "vay von", "vay vá»‘n", "giai ngan", "giáº£i ngÃ¢n", "viec lam", "chot don"
+            "vay von", "vay vá»‘n", "giai ngan", "giáº£i ngÃ¢n", "viec lam", "chot don",
             "tuyen dung", "lam tai nha", "luong cao", "xu ly don hang",
             "tra luong trong ngay", "lien he zalo", "khong can kinh nghiem",
             "kiem tien", "thu dong", "tham gia nhom", "nhan nhiem vu",
