@@ -1,4 +1,4 @@
-package com.samsung.sic.scamshield
+﻿package com.samsung.sic.scamshield
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -47,7 +47,7 @@ class SmsReceiver : BroadcastReceiver() {
         val prefs = context.getSharedPreferences("scamshield_prefs", Context.MODE_PRIVATE)
         val isProtectionEnabled = prefs.getBoolean("is_protection_enabled", true)
         if (!isProtectionEnabled) {
-            Log.d(TAG, "Chế độ bảo vệ đang tắt. Bỏ qua tin nhắn.")
+            Log.d(TAG, "Cháº¿ Ä‘á»™ báº£o vá»‡ Ä‘ang táº¯t. Bá» qua tin nháº¯n.")
             return
         }
 
@@ -60,17 +60,17 @@ class SmsReceiver : BroadcastReceiver() {
 
             if (messages.isNullOrEmpty()) return
 
-            val sender = messages[0].originatingAddress ?: "Không rõ người gửi"
+            val sender = messages[0].originatingAddress ?: "KhÃ´ng rÃµ ngÆ°á»i gá»­i"
             val fullBody = StringBuilder()
             for (msg in messages) {
                 fullBody.append(msg.messageBody)
             }
             val originalSms = fullBody.toString()
 
-            Log.d(TAG, "Nhận tin nhắn từ: $sender")
+            Log.d(TAG, "Nháº­n tin nháº¯n tá»«: $sender")
 
             if (isLegitimateBankOtpMessage(sender, originalSms)) {
-                Log.i(TAG, "Bỏ qua tin nhắn xác thực ngân hàng chính thống.")
+                Log.i(TAG, "Bá» qua tin nháº¯n xÃ¡c thá»±c ngÃ¢n hÃ ng chÃ­nh thá»‘ng.")
                 return
             }
 
@@ -91,7 +91,7 @@ class SmsReceiver : BroadcastReceiver() {
         )
 
         if (localResult.isScam) {
-            Log.i(TAG, "Phát hiện mối đe dọa: ${localResult.reason} (${localResult.riskPercent}%)")
+            Log.i(TAG, "PhÃ¡t hiá»‡n má»‘i Ä‘e dá»a: ${localResult.reason} (${localResult.riskPercent}%)")
 
             CoroutineScope(Dispatchers.IO).launch {
                 try {
@@ -106,9 +106,9 @@ class SmsReceiver : BroadcastReceiver() {
                             reason = localResult.reason
                         )
                     )
-                    Log.d(TAG, "Đã lưu cảnh báo vào lịch sử.")
+                    Log.d(TAG, "ÄÃ£ lÆ°u cáº£nh bÃ¡o vÃ o lá»‹ch sá»­.")
                 } catch (e: Exception) {
-                    Log.e(TAG, "Lỗi lưu database: ${e.message}")
+                    Log.e(TAG, "Lá»—i lÆ°u database: ${e.message}")
                 }
             }
 
@@ -131,7 +131,7 @@ class SmsReceiver : BroadcastReceiver() {
 
         val response = BackendApi.post("/api/v1/scan", payload.toString(), timeoutMs = 2500)
         if (response == null || response.code != 200) {
-            Log.d(TAG, "Dịch vụ máy chủ tạm thời ngoại tuyến, sử dụng kết quả kiểm tra thiết bị.")
+            Log.d(TAG, "Dá»‹ch vá»¥ mÃ¡y chá»§ táº¡m thá»i ngoáº¡i tuyáº¿n, sá»­ dá»¥ng káº¿t quáº£ kiá»ƒm tra thiáº¿t bá»‹.")
             return
         }
 
@@ -145,7 +145,7 @@ class SmsReceiver : BroadcastReceiver() {
             val reasonsSummary = if (reasonsArray != null && reasonsArray.length() > 0) {
                 reasonsArray.getString(0)
             } else {
-                "Phát hiện dấu hiệu rủi ro từ máy chủ phân tích."
+                "PhÃ¡t hiá»‡n dáº¥u hiá»‡u rá»§i ro tá»« mÃ¡y chá»§ phÃ¢n tÃ­ch."
             }
 
             if (alertLevel == "DANGEROUS" || alertLevel == "CAUTION") {
@@ -160,7 +160,7 @@ class SmsReceiver : BroadcastReceiver() {
                 )
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Phản hồi máy chủ không hợp lệ: ${e.message}")
+            Log.e(TAG, "Pháº£n há»“i mÃ¡y chá»§ khÃ´ng há»£p lá»‡: ${e.message}")
         }
     }
 
@@ -204,19 +204,23 @@ class SmsReceiver : BroadcastReceiver() {
         }
 
         val gamblingNoSpaceKeywords = listOf(
-            "phanthuong", "phầnthưởng", "traophucloi", "phucloi", "phúclợi",
-            "naptien", "nạptiền", "lannap", "lầnnạp", "nhanthem", "nhậnthêm",
-            "100phantram", "100%", "daithang", "đạithắng", "dangkinhan", "đăngkýnhận",
-            "taotaikhoan", "tạotàikhoản", "nhan201ngin", "585nghin", "nhan88k",
-            "cobac", "cờbạc", "taixiu", "tài xỉu", "nohu", "nổhũ", "gamebai", "baccarat"
+            "phanthuong", "pháº§nthÆ°á»Ÿng", "traophucloi", "phucloi", "phÃºclá»£i",
+            "naptien", "náº¡ptiá»n", "lannap", "láº§nnáº¡p", "nhanthem", "nháº­nthÃªm",
+            "100phantram", "100%", "daithang", "Ä‘áº¡itháº¯ng", "dangkinhan", "Ä‘ÄƒngkÃ½nháº­n",
+            "taotaikhoan", "táº¡otÃ ikhoáº£n", "nhan201ngin", "585nghin", "nhan88k",
+            "cobac", "cá»báº¡c", "taixiu", "tÃ i xá»‰u", "nohu", "ná»•hÅ©", "gamebai", "baccarat"
         )
         val gamblingMatches = gamblingNoSpaceKeywords.filter { lower.contains(it) }
 
         val regularScamKeywords = listOf(
-            "phan thuong", "phần thưởng", "trung thuong", "trúng thưởng", "nhan qua", "nhận quà",
-            "tri an", "tri ân", "vip", "khoa the", "khóa thẻ", "tai khoan bi khoa", "tài khoản bị khóa",
-            "xac minh", "xác minh", "24h", "phat nguoi", "phạt nguội", "cong an", "công an",
-            "vay von", "vay vốn", "giai ngan", "giải ngân", "viec lam", "chot don"
+            "phan thuong", "pháº§n thÆ°á»Ÿng", "trung thuong", "trÃºng thÆ°á»Ÿng", "nhan qua", "nháº­n quÃ ",
+            "tri an", "tri Ã¢n", "vip", "khoa the", "khÃ³a tháº»", "tai khoan bi khoa", "tÃ i khoáº£n bá»‹ khÃ³a",
+            "xac minh", "xÃ¡c minh", "24h", "phat nguoi", "pháº¡t nguá»™i", "cong an", "cÃ´ng an",
+            "vay von", "vay vá»‘n", "giai ngan", "giáº£i ngÃ¢n", "viec lam", "chot don"
+            "tuyen dung", "lam tai nha", "luong cao", "xu ly don hang",
+            "tra luong trong ngay", "lien he zalo", "khong can kinh nghiem",
+            "kiem tien", "thu dong", "tham gia nhom", "nhan nhiem vu",
+            "tha tim", "xem video", "telegram", "kiemtien"
         )
         val regularMatches = regularScamKeywords.filter { lower.contains(it) }
 
@@ -225,55 +229,55 @@ class SmsReceiver : BroadcastReceiver() {
         }
         if (syncedDomainHit != null) {
             riskScore = maxOf(riskScore, 99)
-            reasons.add("Tên miền nằm trong danh sách lừa đảo cập nhật từ máy chủ: '$syncedDomainHit'")
+            reasons.add("TÃªn miá»n náº±m trong danh sÃ¡ch lá»«a Ä‘áº£o cáº­p nháº­t tá»« mÃ¡y chá»§: '$syncedDomainHit'")
         }
 
         if (hasBankTyposquatting) {
             riskScore = maxOf(riskScore, 98)
-            reasons.add("Phát hiện tên miền lạ mạo danh thương hiệu ngân hàng: '$fakeBankDomainName'")
+            reasons.add("PhÃ¡t hiá»‡n tÃªn miá»n láº¡ máº¡o danh thÆ°Æ¡ng hiá»‡u ngÃ¢n hÃ ng: '$fakeBankDomainName'")
         }
 
         if (gamblingMatches.size >= 2) {
             riskScore = maxOf(riskScore, 96)
-            reasons.add("Chứa các từ khóa lừa đảo nạp tiền tặng thưởng viết dính liền: ${gamblingMatches.take(3).joinToString(", ")}")
+            reasons.add("Chá»©a cÃ¡c tá»« khÃ³a lá»«a Ä‘áº£o náº¡p tiá»n táº·ng thÆ°á»Ÿng viáº¿t dÃ­nh liá»n: ${gamblingMatches.take(3).joinToString(", ")}")
         } else if (gamblingMatches.size == 1 && hasUntrustedDomain) {
             riskScore = maxOf(riskScore, 92)
-            reasons.add("Dụ dỗ nhận phần thưởng phúc lợi kèm liên kết lạ chưa xác minh")
+            reasons.add("Dá»¥ dá»— nháº­n pháº§n thÆ°á»Ÿng phÃºc lá»£i kÃ¨m liÃªn káº¿t láº¡ chÆ°a xÃ¡c minh")
         }
 
         if (hasGoogleDecoy) {
             riskScore = maxOf(riskScore, 97)
-            reasons.add("Sử dụng kỹ thuật chèn liên kết trung gian để ngụy trang")
+            reasons.add("Sá»­ dá»¥ng ká»¹ thuáº­t chÃ¨n liÃªn káº¿t trung gian Ä‘á»ƒ ngá»¥y trang")
         }
 
         if (regularMatches.size >= 2) {
             riskScore = maxOf(riskScore, 90)
-            reasons.add("Phát hiện các từ khóa kích động tâm lý khẩn cấp: ${regularMatches.take(3).joinToString(", ")}")
+            reasons.add("PhÃ¡t hiá»‡n cÃ¡c tá»« khÃ³a kÃ­ch Ä‘á»™ng tÃ¢m lÃ½ kháº©n cáº¥p: ${regularMatches.take(3).joinToString(", ")}")
         } else if (regularMatches.size == 1 && hasUntrustedDomain) {
             riskScore = maxOf(riskScore, 88)
-            reasons.add("Yêu cầu thao tác khẩn cấp kèm liên kết ngoài chưa được xác thực")
+            reasons.add("YÃªu cáº§u thao tÃ¡c kháº©n cáº¥p kÃ¨m liÃªn káº¿t ngoÃ i chÆ°a Ä‘Æ°á»£c xÃ¡c thá»±c")
         }
 
         val syncedMatches = extraKeywords.filter { lower.contains(it) }
         if (syncedMatches.size >= 2) {
             riskScore = maxOf(riskScore, 95)
-            reasons.add("Khớp từ khóa lừa đảo cập nhật từ máy chủ: ${syncedMatches.take(3).joinToString(", ")}")
+            reasons.add("Khá»›p tá»« khÃ³a lá»«a Ä‘áº£o cáº­p nháº­t tá»« mÃ¡y chá»§: ${syncedMatches.take(3).joinToString(", ")}")
         } else if (syncedMatches.size == 1 && hasUntrustedDomain) {
             riskScore = maxOf(riskScore, 92)
-            reasons.add("Dấu hiệu lừa đảo mới cập nhật kèm liên kết ngoài chưa xác thực")
+            reasons.add("Dáº¥u hiá»‡u lá»«a Ä‘áº£o má»›i cáº­p nháº­t kÃ¨m liÃªn káº¿t ngoÃ i chÆ°a xÃ¡c thá»±c")
         }
 
         val isPersonalPhone = sender.startsWith("+84") || (sender.startsWith("0") && sender.length in 10..12)
         if (isPersonalPhone && (hasBankTyposquatting || BANK_BRAND_TOKENS.any { lower.contains(it) })) {
             riskScore = maxOf(riskScore, 85)
-            reasons.add("Số điện thoại cá nhân ($sender) giả danh thông báo ngân hàng")
+            reasons.add("Sá»‘ Ä‘iá»‡n thoáº¡i cÃ¡ nhÃ¢n ($sender) giáº£ danh thÃ´ng bÃ¡o ngÃ¢n hÃ ng")
         }
 
         return if (riskScore >= 70) {
             OnDeviceResult(
                 isScam = true,
                 alertLevel = "DANGEROUS",
-                statusLabel = "CẢNH BÁO NGUY CƠ CAO",
+                statusLabel = "Cáº¢NH BÃO NGUY CÆ  CAO",
                 riskPercent = riskScore,
                 reason = reasons.joinToString(". ")
             )
@@ -281,7 +285,7 @@ class SmsReceiver : BroadcastReceiver() {
             OnDeviceResult(
                 isScam = true,
                 alertLevel = "CAUTION",
-                statusLabel = "CẢNH BÁO ĐÁNG NGỜ",
+                statusLabel = "Cáº¢NH BÃO ÄÃNG NGá»œ",
                 riskPercent = riskScore,
                 reason = reasons.joinToString(". ")
             )
@@ -289,9 +293,9 @@ class SmsReceiver : BroadcastReceiver() {
             OnDeviceResult(
                 isScam = false,
                 alertLevel = "SAFE",
-                statusLabel = "AN TOÀN",
+                statusLabel = "AN TOÃ€N",
                 riskPercent = riskScore,
-                reason = "Không phát hiện dấu hiệu bất thường."
+                reason = "KhÃ´ng phÃ¡t hiá»‡n dáº¥u hiá»‡u báº¥t thÆ°á»ng."
             )
         }
     }
@@ -300,7 +304,7 @@ class SmsReceiver : BroadcastReceiver() {
         val cleanSender = sender.uppercase().replace(" ", "").replace("-", "")
         val isBankSender = TRUSTED_BANK_SENDERS.any { cleanSender.contains(it) }
         val lowerContent = content.lowercase()
-        val hasOtpKeyword = lowerContent.contains("otp") || lowerContent.contains("mã xác thực") || lowerContent.contains("ma xac thuc")
+        val hasOtpKeyword = lowerContent.contains("otp") || lowerContent.contains("mÃ£ xÃ¡c thá»±c") || lowerContent.contains("ma xac thuc")
         val hasAnyLink = lowerContent.contains("http://") || lowerContent.contains("https://") ||
                          lowerContent.contains(".xyz") || lowerContent.contains(".top") ||
                          lowerContent.contains(".site") || lowerContent.contains(".com")
@@ -309,13 +313,13 @@ class SmsReceiver : BroadcastReceiver() {
 
     private fun redactSensitiveDataOnDevice(rawText: String): String {
         var text = rawText
-        val otpPattern = Regex("""(?i)(?:mã\s*(?:otp|xác\s*thực)?|otp\s*(?:code|is|là)?\s*[:\s]*)([0-9]{4,8})\b""")
+        val otpPattern = Regex("""(?i)(?:mÃ£\s*(?:otp|xÃ¡c\s*thá»±c)?|otp\s*(?:code|is|lÃ )?\s*[:\s]*)([0-9]{4,8})\b""")
         text = text.replace(otpPattern) { matchResult ->
             val prefix = matchResult.value.substring(0, matchResult.value.length - matchResult.groupValues[1].length)
-            "$prefix[MÃ_XÁC_THỰC_ĐÃ_ẨN_DANH]"
+            "$prefix[MÃƒ_XÃC_THá»°C_ÄÃƒ_áº¨N_DANH]"
         }
         val cardPattern = Regex("""\b\d{10,19}\b""")
-        text = text.replace(cardPattern, "[SỐ_TÀI_KHOẢN_ĐÃ_ẨN_DANH]")
+        text = text.replace(cardPattern, "[Sá»_TÃ€I_KHOáº¢N_ÄÃƒ_áº¨N_DANH]")
         return text
     }
 
